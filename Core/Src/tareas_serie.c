@@ -186,9 +186,10 @@ void entregable(char * nombreMaquina,char * ssid, char * passwd){
 		while (buffer_ct<buffer_ct1)
 			res=buff->put(buff,buffer_DMA[buffer_ct++]);
 		osDelay(20);
-
+		//tratado del json
 		char *jsonp=strstr(buffer_DMA,"{");
 		jsonp[strlen(jsonp)-2]='\0';
+		//meter en struct para poder funcionar
 		const cJSON *fecha = NULL;
 		cJSON * jsonB = cJSON_Parse(jsonp);
 		fecha = cJSON_GetObjectItemCaseSensitive(jsonB, "currentDateTime");
@@ -196,7 +197,7 @@ void entregable(char * nombreMaquina,char * ssid, char * passwd){
 		struct tm hora;
 		char *format = "%Y-%Om-%dT%H:%M%z";
 		strptime(fechaSTR, format, &hora);
-
+		//bucle de printeo
 		while(1){
 			hora.tm_sec+=2;
 			mktime(&hora);
