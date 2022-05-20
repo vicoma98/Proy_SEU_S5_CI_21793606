@@ -1,5 +1,5 @@
-tareas_serie.c:27:6:serie_Init_FreeRTOS	24	static
-tareas_serie.c:69:6:boot_wifi	64	static
-tareas_serie.c:109:6:entregable	120	static
-tareas_serie.c:190:6:Task_Send	136	static
-tareas_serie.c:208:6:Task_Receive	168	static
+tareas_serie.c:29:6:serie_Init_FreeRTOS	24	static
+tareas_serie.c:71:6:boot_wifi	64	static
+tareas_serie.c:111:6:entregable	384	dynamic
+tareas_serie.c:211:6:Task_Send	136	static
+tareas_serie.c:229:6:Task_Receive	168	static

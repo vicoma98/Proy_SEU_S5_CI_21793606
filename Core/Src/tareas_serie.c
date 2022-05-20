@@ -4,9 +4,11 @@
 #include <task.h>
 #include "cmsis_os.h"
 #include "main.h"
+#include "cJSON.h"
 #include "utility.h"
 #include <string.h>
 #include <stm32f4xx_hal_dma.h>
+#include "time.h"
 
 void Task_Display( void *pvParameters );
 void Task_DMA( void *pvParameters );
@@ -111,10 +113,10 @@ void entregable(char * nombreMaquina,char * ssid, char * passwd){
 		char cad[]="AT+CWJAP=\"%s\",\"%s\"\r\n";
 
 		sprintf(candenafinal,cad,ssid,passwd);
-
-		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,"AT+CWMODE=3\r\n",15,1000);
+		char cad1[]="AT+CWMODE=1\r\n";
+		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,cad1,strlen(cad1),1000);
 		HAL_UART_Receive_DMA(UART_ESP_AT_WIFI, buffer_DMA,buffer_DMA_size);
-		osDelay(500);
+		osDelay(2000);
 		HAL_UART_DMAStop(UART_ESP_AT_WIFI);
 		int buffer_ct1=buffer_DMA_size - HAL_DMA_getcounter(UART_ESP_AT_WIFI);
 		int buffer_ct=0;
@@ -125,7 +127,7 @@ void entregable(char * nombreMaquina,char * ssid, char * passwd){
 
 		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,candenafinal,strlen(candenafinal),1000);
 		HAL_UART_Receive_DMA(UART_ESP_AT_WIFI, buffer_DMA,buffer_DMA_size);
-		osDelay(500);
+		osDelay(2000);
 		HAL_UART_DMAStop(UART_ESP_AT_WIFI);
 		buffer_ct1=buffer_DMA_size - HAL_DMA_getcounter(UART_ESP_AT_WIFI);
 		buffer_ct=0;
@@ -133,10 +135,10 @@ void entregable(char * nombreMaquina,char * ssid, char * passwd){
 			res=buff->put(buff,buffer_DMA[buffer_ct++]);
 		osDelay(1);
 
-
-		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,"AT+CIFSR\r\n",15,1000);
+		char cad2[]="AT+CIFSR\r\n";
+		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,cad2,strlen(cad2),1000);
 		HAL_UART_Receive_DMA(UART_ESP_AT_WIFI, buffer_DMA,buffer_DMA_size);
-		osDelay(500);
+		osDelay(2000);
 		HAL_UART_DMAStop(UART_ESP_AT_WIFI);
 		buffer_ct1=buffer_DMA_size - HAL_DMA_getcounter(UART_ESP_AT_WIFI);
 		buffer_ct=0;
@@ -145,8 +147,8 @@ void entregable(char * nombreMaquina,char * ssid, char * passwd){
 		osDelay(1);
 
 
-		char cad2[]="AT+CIPSTART=\"TCP\",\"%s\",80\r\n";
-		sprintf(candenafinal,cad2,nombreMaquina);
+		char cad3[]="AT+CIPSTART=\"TCP\",\"%s\",80\r\n";
+		sprintf(candenafinal,cad3,nombreMaquina);
 		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,candenafinal,strlen(candenafinal),1000);
 		HAL_UART_Receive_DMA(UART_ESP_AT_WIFI, buffer_DMA,buffer_DMA_size);
 		osDelay(500);
@@ -155,28 +157,18 @@ void entregable(char * nombreMaquina,char * ssid, char * passwd){
 		buffer_ct=0;
 		while (buffer_ct<buffer_ct1)
 			res=buff->put(buff,buffer_DMA[buffer_ct++]);
-		osDelay(1);
+		osDelay(1000);
 
 		//***get***
-		char cad3[]="AT+CIPSEND=%i";
-		char * get="GET /api/json/cet/now HTTP/1.1\r\nAccept: text/html\r\nHost: worldclockapi.com\r\n\r\n";
-		sprintf(candenafinal,cad3,sizeof(get));
+
+		char cad4[]="AT+CIPSEND=%d\r\n";
+		char get[]="GET /api/json/cet/now HTTP/1.1\r\nAccept: text/html\r\nHost: worldclockapi.com\r\n\r\n";
+		char cadenafinalv2[strlen(get)+strlen(cad4)];
+		sprintf(cadenafinalv2,cad4,strlen(get));
 		HAL_UART_Receive_DMA(UART_ESP8266, buffer_DMA,2048);
-		//HAL_UART_Transmit(UART_ESP8266,candenafinal);
-		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,candenafinal,sizeof(candenafinal),1000);
+		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,cadenafinalv2,strlen(get),1000);
 		HAL_UART_Receive_DMA(UART_ESP_AT_WIFI, buffer_DMA,buffer_DMA_size);
-		osDelay(1000);
-		HAL_UART_DMAStop(UART_ESP_AT_WIFI);
-		buffer_ct1=buffer_DMA_size - HAL_DMA_getcounter(UART_ESP_AT_WIFI);
-		buffer_ct=0;
-		while (buffer_ct<buffer_ct1)
-			res=buff->put(buff,buffer_DMA[buffer_ct++]);
-		osDelay(1);
-
-
-		HAL_UART_Receive_DMA(UART_ESP8266, buffer_DMA,2048);
-		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,candenafinal,sizeof(candenafinal),1000);
-		osDelay(1000);
+		osDelay(500);
 		HAL_UART_DMAStop(UART_ESP_AT_WIFI);
 		buffer_ct1=buffer_DMA_size - HAL_DMA_getcounter(UART_ESP_AT_WIFI);
 		buffer_ct=0;
@@ -184,6 +176,35 @@ void entregable(char * nombreMaquina,char * ssid, char * passwd){
 			res=buff->put(buff,buffer_DMA[buffer_ct++]);
 		osDelay(2000);
 
+
+		HAL_UART_Receive_DMA(UART_ESP8266, buffer_DMA,2048);
+		res=HAL_UART_Transmit(UART_ESP_AT_WIFI,get,strlen(get),1000);
+		osDelay(500);
+		HAL_UART_DMAStop(UART_ESP_AT_WIFI);
+		buffer_ct1=buffer_DMA_size - HAL_DMA_getcounter(UART_ESP_AT_WIFI);
+		buffer_ct=0;
+		while (buffer_ct<buffer_ct1)
+			res=buff->put(buff,buffer_DMA[buffer_ct++]);
+		osDelay(20);
+
+		char *jsonp=strstr(buffer_DMA,"{");
+		jsonp[strlen(jsonp)-2]='\0';
+		const cJSON *fecha = NULL;
+		cJSON * jsonB = cJSON_Parse(jsonp);
+		fecha = cJSON_GetObjectItemCaseSensitive(jsonB, "currentDateTime");
+		char* fechaSTR= fecha->valuestring;
+		struct tm hora;
+		char *format = "%Y-%Om-%dT%H:%M%z";
+		strptime(fechaSTR, format, &hora);
+
+		while(1){
+			hora.tm_sec+=2;
+			mktime(&hora);
+			char hora2[100];
+			strftime(hora2,100,"%Y-%Om-%d %H:%M:%S\r\n",&hora);
+			res=buff->puts(buff,(BUFF_ITEM_t *)hora2,strlen(hora2));
+			vTaskDelay(2000/portTICK_RATE_MS );
+		}
 }
 
 
